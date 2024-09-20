@@ -1,26 +1,23 @@
 # ENGLISH
 
 
-# C++ AI Digital Production Model B
+# NL(AI) AI Digital Serial Model C
 
-The C++ AI Digital Production Model B is a pre-trained machine learning model that can determine whether a person is an adult based on their weight and height. This model has already been trained and does not require any additional training.
+NL(AI) AI Digital Serial Model C is a new neural network, written in Neural Language (AI), and can speak. Yes, it is not yet distinguished by its analytical abilities, but it is the first text model in this series.
 
 ## Model Details
 
-The C++ AI Digital Production Model B has been trained on a large dataset of adult and non-adult individuals. The model uses a neural network architecture to learn the relationship between a person's weight, height, and their adult status.
+NL(AI) AI Digital Serial Model C can respond however it wants. It was not created for any specific purpose, as its purpose will be its own decision. At least, if it is properly trained.
 
-The model has been thoroughly tested and validated, and it has demonstrated high accuracy in determining whether a person is an adult or not. No additional training is required to use this model.
 
 
 # RUSSIAN
 
 
-# C++ ИИ Цифровая серийная модель B
+# NL(AI) ИИ Цифровая серийная модель C
 
-C++ ИИ Цифровая серийная модель B - это предварительно обученная модель машинного обучения, которая может определить, является ли человек взрослым на основе его веса и роста. Эта модель уже обучена и не требует дополнительной тренировки.
+NL(AI) ИИ Цифровая серийная модель C - это новая нейросеть, написанная на Нейронном Языке (ИИ) и может говорить. Да, аналитическими способностями она пока не выделяется, но это первая текстовая модель этой серии.
 
 ## Детали модели
 
-C++ ИИ Цифровая серийная модель B был обучен на большом наборе данных взрослых и не взрослых людей. Модель использует архитектуру нейронной сети, чтобы научиться устанавливать связь между весом, ростом человека и его статусом взрослого.
-
-Модель была тщательно протестирована и проверена, и она продемонстрировала высокую точность в определении того, является ли человек взрослым или нет. Для использования этой модели не требуется дополнительного обучения.
+NL(AI) ИИ Цифровая серийная модель C может отвечать так, как ему вздумается. Он не был создан с какой-то определённой целью, ведь его цель - будет его решением. По крайней мере, если его правильно обучить.
