@@ -1,0 +1,16 @@
+printTest
+    Welcome to the AI Production Model C!
+end
+printDebugInfo
+Checking files...
+end
+check
+res/neuralnetwork.nlai
+catchError
+Could NOT open file!
+error
+end
+function
+res/neuralnetwork.nlai
+end
+leave
