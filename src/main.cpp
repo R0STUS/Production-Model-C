@@ -30,8 +30,8 @@ double output(const std::vector<double>& inputs, const std::vector<Neuron>& netw
     return sum;
 }
 
-std::vector<Neuron> train(std::vector<Neuron> network, double learning_rate, double diff, double inputs) {
-    double grad_w0 = diff * inputs[0];
+std::vector<Neuron> train(std::vector<Neuron> network, double learning_rate, double diff, double input) {
+    double grad_w0 = diff * input;
     double grad_b = diff;
 
     network[0].weights[0] -= learning_rate * grad_w0;
@@ -39,18 +39,20 @@ std::vector<Neuron> train(std::vector<Neuron> network, double learning_rate, dou
     return network;
 }
 
-void save_network(double w1, double w2, double b, const std::string& filename) {
+short save_weights(double w1, double b, const std::string& filename) {
     std::ofstream file(filename, std::ios::binary);
     if (file.is_open()) {
-        file << w1 << std::endl << w2 << std::endl << b;
+        file << w1 << std::endl << b;
         file.close();
+        return 0;
     }
     else {
         std::cout << "Unable to open file: " << filename << std::endl;
+        return 1;
     }
 }
 
-int load_weights(double w1, double b, const std::string& filename) {
+double load_weights(double w1, double b, const std::string& filename) {
     std::ifstream file(filename, std::ios::binary);
     std::string line;
     if (file.is_open()) {
@@ -143,7 +145,7 @@ double words(std::string word) {
     wordMap["dote"] = 6.0009;
 
     // "hate"
-    wordMap["hate"] = 0.0;
+    wordMap["hate"] = 0.00005;
     wordMap["despise"] = 0.0001;
     wordMap["abhor"] = 0.0002;
     wordMap["loathe"] = 0.0003;
@@ -378,7 +380,7 @@ std::string unwords(double token) {
     wordMap[6.0009] = "dote";
 
     // "hate"
-    wordMap[0.0] = "hate";
+    wordMap[0.00005] = "hate";
     wordMap[0.0001] = "despise";
     wordMap[0.0002] = "abhor";
     wordMap[0.0003] = "loathe";
@@ -444,11 +446,35 @@ std::vector<double> get_request() {
     return convertedRequest;
 }
 
-int interpretate(std::string fileName, bool isDebug) {
+std::vector<std::pair<double, double>> get_weights(std::vector<double> request) {
+    std::string filePath;
+    double w1 = 1.0;
+    double b = 1.0;
+    std::vector<std::pair<double, double>> weights = {};
+    for (int i = 0; i < request.size(); i++) {
+        filePath = "weights/" + std::to_string(request[i]) + ".weight";
+        w1, b = load_weights(w1, b, filePath);
+        weights.push_back({w1, b});
+    }
+    return weights;
+}
+
+int save_weight(std::vector<double> request, std::vector<std::pair<double, double>> weights) {
+    std::string filePath;
+    short exitCodeFinish = 0;
+    short exitCode = 0;
+    for (int i = 0; i < request.size(); i++) {
+        filePath = "weights/" + std::to_string(request[i]) + ".weight";
+        exitCode = save_weights(weights[i][0], weights[i][1], filePath);
+        if (exitCode == 1)
+            exitCodeFinish = 1;
+    }
+    return exitCodeFinish;
+}
+
+int interpretate(std::string fileName, bool isDebug, std::vector<double> request, std::vector<std::pair<double, double>> weights, std::vector<double> output) {
     std::string line;
     std::ifstream file;
-    std::vector<double> request = {};
-    double weights[][2] = {};
     file.open(fileName);
     long lineNum = 0;
     if (!file) {
@@ -470,14 +496,14 @@ int interpretate(std::string fileName, bool isDebug) {
                 }
             }
             else if (line == "getRequest") {
-                if (request == {}) {
+                if (request.empty()) {
                     request = get_request();
                 }
                 else
                     std::cout << "  WARNING! Could NOT create new request! Request setting is not empty! Clear request first.\n";
             }
             else if (line == "getWeights") {
-                if (request != {}) {
+                if (!request.empty()) {
                     weights = get_weights(request);
                 }
                 else {
@@ -485,8 +511,31 @@ int interpretate(std::string fileName, bool isDebug) {
                     return 1;
                 }
             }
+            else if (line == "saveWeights") {
+                if (!request.empty() && !weights.empty()) {
+                    int eCode = save_weight(request, weights);
+                    if (eCode == 1)
+                        std::cout << "  WARNING! Could NOT save weights.";
+                }
+                else {
+                    std::cout << "  ERROR! Could NOT save weights with empty request or empty weights! Terminating...\n";
+                    return 1;
+                }
+            }/*
+            else if (line == "getOutput") {
+                if (!request.empty() && !weights.empty()) {
+                    output = get_output(request, weights);
+                }
+                else {
+                    std::cout << "  ERROR! Could NOT get outputs with empty request or empty weights! Terminating...\n";
+                    return 1;
+                }
+            }*/
+            else if (line == "clearWeights") {
+                weights.clear();
+            }
             else if (line == "clearRequest") {
-                request = {};
+                request.clear();
             }
             else if (line == "noDebug") {
                 while (std::getline(file, line)) {
@@ -584,7 +633,7 @@ int interpretate(std::string fileName, bool isDebug) {
                     lineNum++;
                     if (line == "end")
                         break;
-                    int eCode = interpretate(line, isDebug);
+                    int eCode = interpretate(line, isDebug, request, weights, output);
                     if (eCode != 0)
                         return 1;
                 }
@@ -611,9 +660,12 @@ int main() {
     std::string mainFile;
     std::ifstream settings;
     std::string line;
+    std::vector<double> request;
+    std::vector<double> output;
+    std::vector<std::pair<double, double>> weights;
     bool isDebug = true;
     long lineNum = 0;
-    settings.open("settings.conf");
+    settings.open("settings.nlai");
     if (!settings) {
         std::cout << "  Unable to open 'settings.conf'!\n  Example:\n 0  settings.conf\n 1  MAINFILE\n 2  res/main.nlai\n 3  end";
         return 1;
@@ -662,19 +714,19 @@ int main() {
                         isDebug = true;
                     }
                     else
-                        std::cout << "  WARNING! Unexcepted setting in file 'settings.conf' at line '" << lineNum << "'! skipping...\n";
+                        std::cout << "  WARNING! Unexcepted setting in file 'settings.nlai' at line '" << lineNum << "'! skipping...\n";
                     std::cout << "  No Debug = " << isDebug << std::endl;
                 }
             }
             else if (line == "end") {
             }
             else
-                std::cout << "  WARNING! Unexcepted setting in file 'settings.conf' at line '" << lineNum << "'! skipping...\n";
+                std::cout << "  WARNING! Unexcepted setting in file 'settings.nlai' at line '" << lineNum << "'! skipping...\n";
         }
         settings.close();
         std::cout << "\n\n\n\n\n";
     }
-    int exitCode = interpretate(mainFile, isDebug);
+    int exitCode = interpretate(mainFile, isDebug, request, weights, output);
     std::cout << "\n\nExit code:    " << exitCode << std::endl;
     return exitCode;
 }
