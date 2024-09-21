@@ -4,11 +4,6 @@ double sigmoid(double x) {
     return 1.0 / (1.0 + std::exp(-x));
 }
 
-struct Neuron {
-    std::vector<double> weights;
-    double bias = 0.0;
-};
-
 double activation(double x) {
     if (std::isfinite(x)) {
         return x;
@@ -18,24 +13,20 @@ double activation(double x) {
     }
 }
 
-double output(const std::vector<double>& inputs, const std::vector<Neuron>& network) {
+double output(const double input, const std::pair<double, double> network) {
     double sum = 0.0;
-    for (size_t i = 0; i < network.size(); i++) {
-        double dot_product = 0.0;
-        for (size_t j = 0; j < inputs.size(); j++) {
-            dot_product += inputs[j] * network[i].weights[j];
-        }
-        sum += activation(dot_product + network[i].bias);
-    }
+    double dot_product = 0.0;
+    dot_product += input * std::get<0>(network);
+    sum += activation(dot_product + std::get<1>(network));
     return sum;
 }
 
-std::vector<Neuron> train(std::vector<Neuron> network, double learning_rate, double diff, double input) {
+std::pair<double, double> train(std::pair<double, double> network, double learning_rate, double diff, double input) {
     double grad_w0 = diff * input;
     double grad_b = diff;
 
-    network[0].weights[0] -= learning_rate * grad_w0;
-    network[0].bias -= learning_rate * grad_b;
+    std::get<0>(network) -= learning_rate * grad_w0;
+    std::get<1>(network) -= learning_rate * grad_b;
     return network;
 }
 
@@ -472,6 +463,21 @@ int save_weight(std::vector<double> request, std::vector<std::pair<double, doubl
     return exitCodeFinish;
 }
 
+std::vector<std::pair<double, double>> train_weights(std::vector<std::pair<double, double>> weights, std::vector<double> request, std::vector<double> diff) {
+    for (int i = 0; i < request.size(); i++) {
+        weights[i] = train(weights[i], 0.1, diff[i], request[i]);
+    }
+    return weights;
+}
+
+std::vector<double> get_output(std::vector<double> request, std::vector<std::pair<double, double>> weights) {
+    std::vector<double> output;
+    for (int i = 0; i < request.size(); i++) {
+        output = get_output(request[i], weights[i]);
+    }
+    return output;
+}
+
 int interpretate(std::string fileName, bool isDebug, std::vector<double> request, std::vector<std::pair<double, double>> weights, std::vector<double> output) {
     std::string line;
     std::ifstream file;
@@ -521,7 +527,7 @@ int interpretate(std::string fileName, bool isDebug, std::vector<double> request
                     std::cout << "  ERROR! Could NOT save weights with empty request or empty weights! Terminating...\n";
                     return 1;
                 }
-            }/*
+            }
             else if (line == "getOutput") {
                 if (!request.empty() && !weights.empty()) {
                     output = get_output(request, weights);
@@ -530,7 +536,7 @@ int interpretate(std::string fileName, bool isDebug, std::vector<double> request
                     std::cout << "  ERROR! Could NOT get outputs with empty request or empty weights! Terminating...\n";
                     return 1;
                 }
-            }*/
+            }
             else if (line == "clearWeights") {
                 weights.clear();
             }
