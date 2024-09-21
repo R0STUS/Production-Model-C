@@ -465,7 +465,7 @@ int save_weight(std::vector<double> request, std::vector<std::pair<double, doubl
     short exitCode = 0;
     for (int i = 0; i < request.size(); i++) {
         filePath = "weights/" + std::to_string(request[i]) + ".weight";
-        exitCode = save_weights(weights[i][0], weights[i][1], filePath);
+        exitCode = save_weights(std::get<0>(weights[i]), std::get<1>(weights[i]), filePath);
         if (exitCode == 1)
             exitCodeFinish = 1;
     }

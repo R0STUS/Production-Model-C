@@ -1,4 +1,9 @@
 printTest
     The Neural Network file is open.
 end
+printTest
+    Enter your request:
+end
+getRequest
+getWeights
 leave
